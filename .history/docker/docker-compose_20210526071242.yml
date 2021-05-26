@@ -1,0 +1,26 @@
+version: '3.3'
+networks:
+  udacity_network:
+
+volumes:
+  udacity-ps-volume:
+
+services:
+    postgres:
+      image: postgres
+      container_name: udacity-ps
+      restart: "no"
+      ports:
+        - "15432:5432"
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: tgkicksass
+        APP_DB_USER: docker
+        APP_DB_PASS: docker
+        APP_DB_NAME: udacity
+        TZ: Europe/Madrid
+      volumes:
+        - ./db:/docker-entrypoint-initdb.d/
+        - udacity-ps-volume:/var/lib/postgresql/data
+      networks:
+        - udacity_network
