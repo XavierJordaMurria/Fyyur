@@ -1,0 +1,6 @@
+INSERT INTO public."Show" (venue_id,venue_name,artist_id,artist_image_link,artist_name,start_time) VALUES
+	 (3,'The Musical Hop',4,'https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80','Guns N Petals','2019-05-21 21:30:00'),
+	 (1,'Park Square Live Music & Coffee',5,'https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80','Matt Quevedo','2019-06-15 23:00:00'),
+	 (1,'Park Square Live Music & Coffee',6,'https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80','The Wild Sax Band','2035-04-01 20:00:00'),
+	 (1,'Park Square Live Music & Coffee',6,'https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80','The Wild Sax Band','2035-04-08 20:00:00'),
+	 (1,'Park Square Live Music & Coffee',6,'https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80','The Wild Sax Band','2035-04-15 20:00:00');

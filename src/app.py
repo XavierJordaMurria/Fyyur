@@ -4,10 +4,12 @@
 
 import json
 import dateutil.parser
+from sqlalchemy.sql import func
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import column_property
 from flask_migrate import Migrate
 import logging
 from logging import Formatter, FileHandler
@@ -33,6 +35,11 @@ venus_generes_pivot = db.Table('venus_generes_pivot',
     db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key=True)
 )
 
+artists_generes_pivot = db.Table('artists_generes_pivot',
+    db.Column('genere_id', db.Integer, db.ForeignKey('Genere.id'), primary_key=True),
+    db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True)
+)
+
 class Genere(db.Model):
     __tablename__ = 'Genere'
     id = db.Column(db.Integer, primary_key=True)
@@ -51,23 +58,16 @@ class Venue(db.Model):
     facebook_link = db.Column(db.String(120))
     generes = db.relationship('Genere', secondary=venus_generes_pivot, lazy='subquery',
         backref=db.backref('venues', lazy=True))
+    website = db.Column(db.String(500))
+    seeking_talent = db.Column(db.Boolean)
+    seeking_description = db.Column(db.String(500))
+    past_shows = db.relationship("Show",
+                    primaryjoin="and_(Show.start_time < 'func.now()')")
+    upcoming_shows = db.relationship("Show",
+                    primaryjoin="and_(Show.start_time >= 'func.now()')")
 
-    # "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
-    # "website": "https://www.themusicalhop.com",
-    # "facebook_link": "https://www.facebook.com/TheMusicalHop",
-    # "seeking_talent": True,
-    # "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-    # "past_shows": [{
-    #   "artist_id": 4,
-    #   "artist_name": "Guns N Petals",
-    #   "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-    #   "start_time": "2019-05-21T21:30:00.000Z"
-    # }],
-    # "upcoming_shows": [],
-    # "past_shows_count": 1,
-    # "upcoming_shows_count": 0,
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    past_shows_count = column_property(func.count('past_shows'))
+    upcoming_shows_count = column_property(func.count('upcoming_shows'))
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -77,13 +77,35 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
+    generes = db.relationship('Genere', secondary=artists_generes_pivot, lazy='subquery',
+        backref=db.backref('venues', lazy=True))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    website = db.Column(db.String(500))
+    seeking_venue = db.Column(db.Boolean)
+    seeking_description = db.Column(db.String(500))
+    past_shows = db.relationship("Show",
+                    primaryjoin="and_(Show.start_time < 'func.now()')")
+    upcoming_shows = db.relationship("Show",
+                    primaryjoin="and_(Show.start_time >= 'func.now()')")
+
+    past_shows_count = column_property(func.count('past_shows'))
+    upcoming_shows_count = column_property(func.count('upcoming_shows'))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+
+class Show(db.Model):
+  __tablename__ = 'Show'
+  id = db.Column(db.Integer, primary_key=True)
+  venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
+  venue_name = db.Column(db.String(120))
+  artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
+  artist_id = db.Column(db.Integer)
+  artist_image_link = db.Column(db.String(500))
+  artist_name = db.Column(db.String(120))
+  start_time = db.Column(db.DateTime)
 
 #----------------------------------------------------------------------------#
 # Filters.
