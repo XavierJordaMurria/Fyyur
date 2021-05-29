@@ -4,9 +4,10 @@
 
 import json
 import dateutil.parser
+import datetime
 from sqlalchemy.sql import func
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import Flask, render_template, request, Response, flash, redirect, url_for, abort
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import column_property
@@ -56,15 +57,15 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
-    generes = db.relationship('Genere', secondary=venus_generes_pivot, lazy='subquery',
-        backref=db.backref('venues', lazy=True))
+    generes = db.relationship('Genere', 
+                              secondary=venus_generes_pivot)
     website = db.Column(db.String(500))
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(500))
-    past_shows = db.relationship("Show",
-                    primaryjoin="and_(Show.start_time < 'func.now()')")
-    upcoming_shows = db.relationship("Show",
-                    primaryjoin="and_(Show.start_time >= 'func.now()')")
+    # past_shows = db.relationship("Show")
+    upcoming_shows = db.relationship("Show")
+    # upcoming_shows = db.relationship("Show",
+    #                 primaryjoin="and_(Show.start_time >= 'func.now()')")
 
     past_shows_count = column_property(func.count('past_shows'))
     upcoming_shows_count = column_property(func.count('upcoming_shows'))
@@ -77,17 +78,19 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    generes = db.relationship('Genere', secondary=artists_generes_pivot, lazy='subquery',
-        backref=db.backref('venues', lazy=True))
+    generes = db.relationship('Genere',
+                              secondary=artists_generes_pivot, lazy='subquery')
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(500))
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(500))
-    past_shows = db.relationship("Show",
-                    primaryjoin="and_(Show.start_time < 'func.now()')")
-    upcoming_shows = db.relationship("Show",
-                    primaryjoin="and_(Show.start_time >= 'func.now()')")
+    # past_shows = db.relationship("Show")
+    upcoming_shows = db.relationship("Show")
+    # past_shows = db.relationship("Show",
+    #                 primaryjoin="and_(Show.start_time < 'func.now()')")
+    # upcoming_shows = db.relationship("Show",
+    #                 primaryjoin="and_(Show.start_time >= 'func.now()')")
 
     past_shows_count = column_property(func.count('past_shows'))
     upcoming_shows_count = column_property(func.count('upcoming_shows'))
@@ -102,10 +105,12 @@ class Show(db.Model):
   venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
   venue_name = db.Column(db.String(120))
   artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
-  artist_id = db.Column(db.Integer)
-  artist_image_link = db.Column(db.String(500))
   artist_name = db.Column(db.String(120))
+  artist_image_link = db.Column(db.String(500))
   start_time = db.Column(db.DateTime)
+
+  def __repr__(self):
+    return f'''<Show {self.id}, {self.venue_id}, {self.venue_name}, {self.artist_id}, {self.artist_name}, {self.start_time}>'''
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -480,44 +485,31 @@ def create_artist_submission():
 def shows():
   # displays list of shows at /shows
   # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "venue_id": 1,
-    "venue_name": "The Musical Hop",
-    "artist_id": 4,
-    "artist_name": "Guns N Petals",
-    "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-    "start_time": "2019-05-21T21:30:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 5,
-    "artist_name": "Matt Quevedo",
-    "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
-    "start_time": "2019-06-15T23:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-01T20:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-08T20:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-15T20:00:00.000Z"
-  }]
-  return render_template('pages/shows.html', shows=data)
+  #       num_shows should be aggregated based on number of upcoming shows per venue
+  error = False
+  data=[]
+  try:
+    print('about to chekc the shows')
+    result=Show.query.all()
+    db.session.commit()
+
+    data = list(map(lambda s: __showParse(s), result))
+    [print(show) for show in data]
+
+    print(f'Loaden {len(data)} shows')
+  except Exception as e: 
+    error = True
+    print(e)
+    print('something went wrng')
+    db.session.rollback()
+  finally:
+    print('finally')
+    db.session.close()
+
+  if not error:
+    return render_template('pages/shows.html', shows=data)
+  else:
+    abort(500)
 
 @app.route('/shows/create')
 def create_shows():
@@ -556,6 +548,9 @@ if not app.debug:
     app.logger.addHandler(file_handler)
     app.logger.info('errors')
 
+def __showParse(show):
+  show.start_time =  show.start_time.strftime("%d-%b-%Y %H:%M:%S")
+  return show
 #----------------------------------------------------------------------------#
 # Launch.
 #----------------------------------------------------------------------------#

@@ -4,5 +4,11 @@
         "titleBar.activeBackground": "#5E3056",
         "titleBar.activeForeground": "#FCF9FC"
     },
-    "python.pythonPath": "fyyur-env/bin/python"
+    "python.pythonPath": "fyyur-env/bin/python",
+    "files.associations": {
+        // extension name : html
+        "*.ejs": "html",
+        "*.html": "html",
+        "*.js": "html"
+    }
 }
