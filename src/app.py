@@ -97,6 +97,8 @@ class Artist(db.Model):
     # past_shows_count = column_property(func.count('past_shows'))
     # upcoming_shows_count = column_property(func.count('upcoming_shows'))
 
+    def __repr__(self):
+      return f'''<Artist {self.id}, {self.name}, {self.city}>'''
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
@@ -305,17 +307,16 @@ def artists():
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
+
+  search = "%{}%".format(request.form.get('search_term', ''))
+  result = Artist.query.filter(Artist.name.ilike(search)).all()
   response={
-    "count": 1,
-    "data": [{
-      "id": 4,
-      "name": "Guns N Petals",
-      "num_upcoming_shows": 0,
-    }]
+    "count": len(result),
+    "data": result
   }
+
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/artists/<int:artist_id>')
@@ -327,6 +328,7 @@ def show_artist(artist_id):
 def dump(obj):
   for attr in dir(obj):
     print("obj.%s = %r" % (attr, getattr(obj, attr)))
+
 #  Update
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
