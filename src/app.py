@@ -7,12 +7,12 @@ import dateutil.parser
 from pprint import pprint
 import datetime
 from sqlalchemy.sql import func
-from sqlalchemy.orm import load_only
+from sqlalchemy.orm import load_only, column_property
+from sqlalchemy import and_
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for, abort
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import column_property
 from flask_migrate import Migrate
 import logging
 from logging import Formatter, FileHandler
@@ -69,8 +69,10 @@ class Venue(db.Model):
     # upcoming_shows = db.relationship("Show",
     #                 primaryjoin="and_(Show.start_time >= 'func.now()')")
 
-    past_shows_count = column_property(func.count('past_shows'))
-    upcoming_shows_count = column_property(func.count('upcoming_shows'))
+    # past_shows_count = column_property(func.count('past_shows'))
+    # upcoming_shows_count = column_property(func.count('upcoming_shows'))
+    def __repr__(self):
+      return f'''<Venue {self.id}, {self.name}, {self.city}>'''
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -167,7 +169,27 @@ def venues():
       "num_upcoming_shows": 0,
     }]
   }]
-  return render_template('pages/venues.html', areas=data);
+
+  city_states = db.session.query(Venue.city, Venue.state).distinct()
+
+  response = []
+  for c_s in city_states:
+    pprint(c_s)
+    # dictionary with mixed keys
+    my_dict = {
+      'city': c_s.city,
+      'state': c_s.state,
+      'venues' : db.session
+        .query(Venue)
+        .filter(and_(Venue.city==c_s.city, Venue.state==c_s.state))
+        .order_by(Venue.name)
+        .all()
+    }
+    response.append(my_dict)
+  
+  pprint(response)
+
+  return render_template('pages/venues.html', areas=response);
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
