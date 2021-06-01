@@ -19,6 +19,11 @@ from logging import Formatter, FileHandler
 from flask_wtf import FlaskForm
 from forms import *
 import sys
+
+#-- Models --
+from models import *
+
+#------------
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -26,98 +31,11 @@ import sys
 app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
-db = SQLAlchemy(app)
+
+db.app = app
+db.init_app(app)
 
 migrate = Migrate(app, db)
-
-#----------------------------------------------------------------------------#
-# Models.
-#----------------------------------------------------------------------------#
-
-venus_generes_pivot = db.Table('venus_generes_pivot',
-    db.Column('genere_id', db.Integer, db.ForeignKey('Genere.id'), primary_key=True),
-    db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key=True)
-)
-
-artists_generes_pivot = db.Table('artists_generes_pivot',
-    db.Column('genere_id', db.Integer, db.ForeignKey('Genere.id'), primary_key=True),
-    db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True)
-)
-
-class Genere(db.Model):
-    __tablename__ = 'Genere'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-
-class Venue(db.Model):
-    __tablename__ = 'Venue'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    generes = db.relationship('Genere', 
-                              secondary=venus_generes_pivot)
-    website = db.Column(db.String(500))
-    seeking_talent = db.Column(db.Boolean)
-    seeking_description = db.Column(db.String(500))
-    # past_shows = db.relationship("Show")
-    upcoming_shows = db.relationship("Show")
-    # upcoming_shows = db.relationship("Show",
-    #                 primaryjoin="and_(Show.start_time >= 'func.now()')")
-
-    # past_shows_count = column_property(func.count('past_shows'))
-    # upcoming_shows_count = column_property(func.count('upcoming_shows'))
-    def __repr__(self):
-      return f'''<Venue {self.id}, {self.name}, {self.city}>'''
-
-class Artist(db.Model):
-    __tablename__ = 'Artist'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    generes = db.relationship('Genere',
-                              secondary=artists_generes_pivot, lazy='subquery')
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    website = db.Column(db.String(500))
-    seeking_venue = db.Column(db.Boolean)
-    seeking_description = db.Column(db.String(500))
-    # past_shows = db.relationship("Show")
-    upcoming_shows = db.relationship("Show")
-    # past_shows = db.relationship("Show",
-    #                 primaryjoin="and_(Show.start_time < 'func.now()')")
-    # upcoming_shows = db.relationship("Show",
-    #                 primaryjoin="and_(Show.start_time >= 'func.now()')")
-
-    # past_shows_count = column_property(func.count('past_shows'))
-    # upcoming_shows_count = column_property(func.count('upcoming_shows'))
-
-    def __repr__(self):
-      return f'''<Artist {self.id}, {self.name}, {self.city}>'''
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
-
-class Show(db.Model):
-  __tablename__ = 'Show'
-  id = db.Column(db.Integer, primary_key=True)
-  venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
-  venue_name = db.Column(db.String(120))
-  artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
-  artist_name = db.Column(db.String(120))
-  artist_image_link = db.Column(db.String(500))
-  start_time = db.Column(db.DateTime)
-
-  def __repr__(self):
-    return f'''<Show {self.id}, {self.venue_id}, {self.venue_name}, {self.artist_id}, {self.artist_name}, {self.start_time}>'''
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -147,9 +65,11 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
   city_states = db.session.query(Venue.city, Venue.state).distinct()
+
+  # import ipdb
+  # ipdb.set_trace()
 
   response = []
   for c_s in city_states:
@@ -423,9 +343,10 @@ if not app.debug:
     app.logger.addHandler(file_handler)
     app.logger.info('errors')
 
-def __showParse(show):
+def __showParse(show: Show):
   show.start_time =  show.start_time.strftime("%d-%b-%Y %H:%M:%S")
   return show
+
 #----------------------------------------------------------------------------#
 # Launch.
 #----------------------------------------------------------------------------#
