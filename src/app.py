@@ -123,7 +123,6 @@ def show_venue(venue_id):
 #  Create Venue
 #  ----------------------------------------------------------------
 
-
 @app.route('/venues/create', methods=['GET'])
 def create_venue_form():
     form = VenueForm()
@@ -133,32 +132,14 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
     try:
-        name = request.form['name']
-        city = request.form['city']
-        state = request.form['state']
-        address = request.form['address']
-        phone = request.form['phone']
-        image_link = request.form['image_link']
-        facebook_link = request.form['facebook_link']
-        website = request.form['website_link']
-        genres = request.form['genres']
-        seeking_talent = True if request.form['seeking_talent'] == 'y' else False
-        seeking_description = request.form['seeking_description']
-
+        input = request.form
+        genres = input['genres']
+        form = VenueForm(input)
+        venue = Venue()
+        form.populate_obj(venue)
+        venue.seeking_talent = True if input['seeking_talent'] == 'y' else False
         genre: Genre = Genre.query.filter_by(name=genres).first()
-
-        venue = Venue(
-            name=name,
-            city=city,
-            state=state,
-            address=address,
-            phone=phone,
-            image_link=image_link,
-            facebook_link=facebook_link,
-            website=website,
-            seeking_talent=seeking_talent,
-            seeking_description=seeking_description)
-
+        venue.genres = []
         venue.genres.append(genre)
         db.session.add(venue)
         db.session.commit()
@@ -229,8 +210,6 @@ def dump(obj):
 
 #  Update
 #  ----------------------------------------------------------------
-
-
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
     form = ArtistForm()
@@ -366,30 +345,18 @@ def create_artist_form():
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
     # called upon submitting the new artist listing form
+    form = ArtistForm(request.form)
+
     try:
-        name = request.form['name']
-        city = request.form['city']
-        state = request.form['state']
-        phone = request.form['phone']
-        image_link = request.form['image_link']
-        facebook_link = request.form['facebook_link']
-        website = request.form['website_link']
         genres = request.form['genres']
-        seeking_venue = request.form['seeking_venue']
-        seeking_description = request.form['seeking_description']
-
         genre: Genre = Genre.query.filter_by(name=genres).first()
-        artist: Artist = Artist(
-            name=name,
-            city=city,
-            state=state,
-            phone=phone,
-            image_link=image_link,
-            facebook_link=facebook_link,
-            website=website,
-            seeking_venue=seeking_venue,
-            seeking_description=seeking_description)
 
+        artist: Artist = Artist()
+        form.populate_obj(artist)
+        artist.seeking_venue = True if request.form['seeking_venue'] == 'y' else False
+        genre: Genre = Genre.query.filter_by(name=genres).first()
+        
+        artist.genres = []
         artist.genres.append(genre)
         db.session.add(artist)
         db.session.commit()
@@ -486,6 +453,14 @@ def create_show_submission():
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
     return render_template('pages/home.html')
 
+
+@app.errorhandler(401)
+def not_found_error(error):
+    return render_template('errors/401.html'), 401
+
+@app.errorhandler(403)
+def not_found_error(error):
+    return render_template('errors/403.html'), 403
 
 @app.errorhandler(404)
 def not_found_error(error):
