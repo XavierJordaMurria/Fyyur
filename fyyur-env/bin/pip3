@@ -1,4 +1,4 @@
-#!/home/xavi/Udacity/fyyur/fyyur-env/bin/python3
+#!/home/xavi/Udacity/fyyur/fyyur-env/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
