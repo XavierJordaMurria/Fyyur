@@ -21,12 +21,12 @@ class Artist(db.Model):
     website = db.Column(db.String(500))
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(500))
-    # past_shows = db.relationship("Show")
-    upcoming_shows = db.relationship("Show")
-    # past_shows = db.relationship("Show",
-    #                 primaryjoin="and_(Show.start_time < 'func.now()')")
-    # upcoming_shows = db.relationship("Show",
-    #                 primaryjoin="and_(Show.start_time >= 'func.now()')")
+    upcoming_shows = db.relationship("Show",
+                    primaryjoin="and_(Artist.id==Show.artist_id, "
+                    "Show.start_time >= str(func.now()))")
+    past_shows = db.relationship("Show",
+                    primaryjoin="and_(Artist.id==Show.artist_id, "
+                    "Show.start_time < str(func.now()))")
 
     # past_shows_count = column_property(func.count('past_shows'))
     # upcoming_shows_count = column_property(func.count('upcoming_shows'))

@@ -10,5 +10,8 @@
         "*.ejs": "html",
         "*.html": "html",
         "*.js": "html"
-    }
+    },
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true, // This is the new config for pep8
+    "python.linting.enabled": false
 }
