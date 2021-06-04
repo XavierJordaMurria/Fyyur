@@ -1,4 +1,4 @@
-INSERT INTO public."Genere" ("name") VALUES
+INSERT INTO public."Genre" ("name") VALUES
 	 ('Alternative'),
 	 ('Blues'),
 	 ('Classical'),
@@ -9,7 +9,7 @@ INSERT INTO public."Genere" ("name") VALUES
 	 ('Hip-Hop'),
 	 ('Heavy Metal'),
 	 ('Instrumental');
-INSERT INTO public."Genere" ("name") VALUES
+INSERT INTO public."Genre" ("name") VALUES
 	 ('Jazz'),
 	 ('Musical Theatre'),
 	 ('Pop'),

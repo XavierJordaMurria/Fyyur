@@ -1,8 +1,8 @@
 
 from models.database import db
 
-artists_generes_pivot = db.Table('artists_generes_pivot',
-    db.Column('genere_id', db.Integer, db.ForeignKey('Genere.id'), primary_key=True),
+artists_genres_pivot = db.Table('artists_genres_pivot',
+    db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id'), primary_key=True),
     db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True)
 )
 
@@ -14,8 +14,8 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    generes = db.relationship('Genere',
-                              secondary=artists_generes_pivot, lazy='subquery')
+    genres = db.relationship('Genre',
+                              secondary=artists_genres_pivot, lazy='subquery')
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(500))
